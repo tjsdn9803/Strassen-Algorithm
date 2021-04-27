@@ -2,23 +2,23 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Strassen {
-    void init_Matrix(int n,int [][]A){
+    void init_Matrix(int [][]A){//행렬을 1~5의 랜덤한 숫자로 채움
         Random r = new Random();
-        for(int i=0;i<n;i++){
-            for(int j=0;j<n;j++){
+        for(int i=0;i<A.length;i++){
+            for(int j=0;j<A[0].length;j++){
                 A[i][j] = r.nextInt(5)+1;
             }
         }
     }
-    void print_Matrix(int [][]A){
+    void print_Matrix(int [][]A){//행렬 출력
         for(int i=0;i<A.length;i++){
-            for(int j=0;j< A.length;j++){
+            for(int j=0;j< A[0].length;j++){
                 System.out.print(A[i][j]+" ");
             }
             System.out.println(" ");
         }
     }
-    int[][] sum_Matrix(int [][]A,int [][]B){
+    int[][] sum_Matrix(int [][]A,int [][]B){//행렬 덧셈
         int [][] summat = new int[A.length][A.length];
         for(int i=0;i<A.length;i++){
             for(int j=0;j<A.length;j++){
@@ -27,7 +27,8 @@ public class Strassen {
         }
         return summat;
     }
-    int[][] sub_Matrix(int [][]A,int [][]B){
+
+    int[][] sub_Matrix(int [][]A,int [][]B){//행렬 뺼셈
         int [][] submat = new int[A.length][A.length];
         for(int i=0;i<A.length;i++){
             for(int j=0;j<A.length;j++){
@@ -36,18 +37,48 @@ public class Strassen {
         }
         return submat;
     }
-    int[][] mul_Matrix(int [][]A,int [][]B){
-        int [][] mulmat = new int[A.length][A.length];
+
+    int[][] mul_Matrix(int [][]A,int [][]B){//행렬의 일반 곱셈
+        if(A[0].length != B.length) {//첫번쨰 행렬의 가로길이와 두번쨰 행렬의 세로길이가 같지않으면 행렬계산을 할수 없으므로
+            System.out.println("곱하려는 두 행렬의 길이가 맞지 않습니다.");
+            return A;
+        }
+        int [][] mulmat = new int[A.length][B[0].length];
         for(int i=0;i<A.length;i++){
-            for(int j=0;j<A.length;j++){
-                for(int k=0;k<A.length;k++){
+            for(int j=0;j<B[0].length;j++){
+                for(int k=0;k<A[0].length;k++){
                     mulmat[i][j] += A[i][k] * B[k][j];
                 }
             }
         }
         return mulmat;
     }
-    int [][] strassen_Matrix(int [][]A,int [][]B){
+    int [][] strassen_Matrix(int [][]A,int [][]B){//행렬의 슈트라센 곱
+        //입력 곱셈을 처리할 두 행렬 A와B
+        //출력 행렬A와 행렬B의 곱
+        if(A[0].length != B.length) {//첫번쨰 행렬의 가로길이와 두번쨰 행렬의 세로길이가 같지않으면 행렬계산을 할수 없으므로
+            System.out.println("곱하려는 두 행렬의 길이가 맞지 않습니다.");
+            return A;
+        }
+        double Axl = baselog(A[0].length,2);
+        double Ayl = baselog(A.length,2);
+        double Bxl = baselog(B[0].length,2);
+        double Byl = baselog(B.length,2);
+
+        if((Axl%1) != 0 || (Ayl%1) != 0 || (Bxl%1)!= 0 || (Byl%1) != 0){
+            //행렬 A와 B의 크기를 모두 A와B의 가로,세로 넓이 중 가장 큰수의 가장 가까운 2의 제곱으로 바꾸어
+            //두 행렬의 크기를 모두 2^n인 정사각형으로 바꾸고 그 늘어난 공간에는 0으로 채운다.
+            int cnt=0;
+            int maxlength;
+            maxlength = Math.max(Math.max(A.length,A[0].length),Math.max(B.length,B[0].length));
+            while(baselog(maxlength,2)%1 != 0){
+                cnt++;
+                maxlength++;
+            }
+            A = merge0_Matrix(A,maxlength-A[0].length+cnt,maxlength-A.length+cnt);
+            B = merge0_Matrix(B,maxlength-B[0].length+cnt,maxlength-B.length+cnt);
+
+        }
         if(A.length <= 2){
             return mul_Matrix(A,B);
         }
@@ -86,52 +117,63 @@ public class Strassen {
          return cutmat;
     }
 
-    int [][]merge_Matrix(int [][]C00,int [][]C01,int [][]C10,int [][]C11){
-        int[][] mermat = new int[C00.length*2][C00.length*2];
+    int [][]merge_Matrix(int [][]C00,int [][]C01,int [][]C10,int [][]C11){//C00,C01,C10,C11을 각각 좌상,우상,좌하,우하에두어 헙쳐서 하나의 행렬로
+        int[][] mermat = new int[C00.length+C11.length][C00[0].length+C11[0].length];
         for(int i=0;i<C00.length;i++){
-            for(int j=0;j<C00.length;j++){
-                mermat[i][j] = C00[i][j];
-                mermat[i][j+ C00.length] = C01[i][j];
-                mermat[i+ C00.length][j] = C10[i][j];
-                mermat[i+ C00.length][j+ C00.length] = C11[i][j];
-            }
+            for(int j=0;j<C00[0].length;j++)mermat[i][j] = C00[i][j];
+        }
+        for(int i=0;i<C01.length;i++){
+            for(int j=0;j<C01[0].length;j++)mermat[i][j+C00[0].length] = C01[i][j];
+        }
+        for(int i=0;i<C10.length;i++){
+            for(int j=0;j<C10[0].length;j++)mermat[i+C00.length][j] = C10[i][j];
+        }
+        for(int i=0;i<C11.length;i++){
+            for(int j=0;j<C11[0].length;j++)mermat[i+C00.length][j+C00[0].length] = C11[i][j];
         }
         return mermat;
+    }
+
+    double baselog(int x,double base){//밑이 base인 log함수
+        return Math.log10(x)/Math.log10(base);
+    }
+
+    int [][]merge0_Matrix(int [][]A,int x,int y){//x,y만큼 넓이를 더한 행렬의 나머지부분을 0으로 채운 함수
+        int[][] z01 = new int[A.length][x];
+        int[][] z10 = new int[y][A[0].length];
+        int[][] z11 = new int[y][x];
+        return merge_Matrix(A,z01,z10,z11);
     }
 
     public static void main(String[] args) {
         Strassen str = new Strassen();
         Scanner sc = new Scanner(System.in);
         System.out.println("2의 제곱인 배열의 길이 n입력");
-        int n = sc.nextInt();
-        int [][] A = new int[n][n];
-        int [][] B = new int[n][n];
+        int x = sc.nextInt();
+        int y = sc.nextInt();
+        int [][] A = new int[y][x];
+        int [][] B = new int[y][x];
         System.out.println(A.length);
-        str.init_Matrix(n,A);
-        str.init_Matrix(n,B);
-//        System.out.println("A배열");
-//        str.print_Matrix(A);
-//        System.out.println("B배열");
-//        str.print_Matrix(B);
+        str.init_Matrix(A);
+        str.init_Matrix(B);
+        System.out.println("A배열");
+        //str.print_Matrix(A);
+        System.out.println("B배열");
+        //str.print_Matrix(B);
+
         System.out.println("일반적인 행렬 곱");
-        int[][]C = new int [][]{{1,2,3},{1,2,3}};
+        int[][]C = new int [][]{{1,2,3},{1,2,3}};//test
         int[][]D = new int [][]{{1,2,3},{1,2,3},{1,2,3}};
 
         long normal_start = System.currentTimeMillis();
-        str.print_Matrix(str.mul_Matrix(C,D));
+        str.mul_Matrix(A,B);
         long normal_end = System.currentTimeMillis();
         System.out.println("일반 곱의 실행시간: "+(normal_end-normal_start)/1000.0);
-//
-//        System.out.println("슈트라센 행렬 곱");
-//        long strassen_start = System.currentTimeMillis();
-//        str.strassen_Matrix(A,B);
-//        long strassen_end = System.currentTimeMillis();
-//        System.out.println("슈트라센 곱의 실행시간: "+(strassen_end-strassen_start)/1000.0);
 
-
-
-
-
-
+        System.out.println("슈트라센 행렬 곱");
+        long strassen_start = System.currentTimeMillis();
+        str.strassen_Matrix(A,B);
+        long strassen_end = System.currentTimeMillis();
+        System.out.println("슈트라센 곱의 실행시간: "+(strassen_end-strassen_start)/1000.0);
     }
 }
