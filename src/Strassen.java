@@ -98,7 +98,7 @@ public class Strassen {
         }
         return mermat;
     }
-    
+
     public static void main(String[] args) {
         Strassen str = new Strassen();
         Scanner sc = new Scanner(System.in);
@@ -109,15 +109,24 @@ public class Strassen {
         System.out.println(A.length);
         str.init_Matrix(n,A);
         str.init_Matrix(n,B);
-        System.out.println("A배열");
-        str.print_Matrix(A);
-        System.out.println("B배열");
-        str.print_Matrix(B);
+//        System.out.println("A배열");
+//        str.print_Matrix(A);
+//        System.out.println("B배열");
+//        str.print_Matrix(B);
         System.out.println("일반적인 행렬 곱");
-        str.print_Matrix(str.mul_Matrix(A,B));
+        int[][]C = new int [][]{{1,2,3},{1,2,3}};
+        int[][]D = new int [][]{{1,2,3},{1,2,3},{1,2,3}};
 
-        System.out.println("슈트라센");
-        str.print_Matrix(str.strassen_Matrix(A,B));
+        long normal_start = System.currentTimeMillis();
+        str.print_Matrix(str.mul_Matrix(C,D));
+        long normal_end = System.currentTimeMillis();
+        System.out.println("일반 곱의 실행시간: "+(normal_end-normal_start)/1000.0);
+//
+//        System.out.println("슈트라센 행렬 곱");
+//        long strassen_start = System.currentTimeMillis();
+//        str.strassen_Matrix(A,B);
+//        long strassen_end = System.currentTimeMillis();
+//        System.out.println("슈트라센 곱의 실행시간: "+(strassen_end-strassen_start)/1000.0);
 
 
 
