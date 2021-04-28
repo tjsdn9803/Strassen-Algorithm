@@ -71,9 +71,10 @@ public class Strassen {
             int cnt=0;
             int maxlength;
             maxlength = Math.max(Math.max(A.length,A[0].length),Math.max(B.length,B[0].length));
-            while(baselog(maxlength,2)%1 != 0){
+            int m = maxlength;
+            while(baselog(m,2)%1 != 0){
                 cnt++;
-                maxlength++;
+                m++;
             }
             A = merge0_Matrix(A,maxlength-A[0].length+cnt,maxlength-A.length+cnt);
             B = merge0_Matrix(B,maxlength-B[0].length+cnt,maxlength-B.length+cnt);
@@ -166,13 +167,13 @@ public class Strassen {
         int[][]D = new int [][]{{1,2,3},{1,2,3},{1,2,3}};
 
         long normal_start = System.currentTimeMillis();
-        str.mul_Matrix(A,B);
+        str.print_Matrix(str.mul_Matrix(A,B));
         long normal_end = System.currentTimeMillis();
         System.out.println("일반 곱의 실행시간: "+(normal_end-normal_start)/1000.0);
 
         System.out.println("슈트라센 행렬 곱");
         long strassen_start = System.currentTimeMillis();
-        str.strassen_Matrix(A,B);
+        str.print_Matrix(str.strassen_Matrix(A,B));
         long strassen_end = System.currentTimeMillis();
         System.out.println("슈트라센 곱의 실행시간: "+(strassen_end-strassen_start)/1000.0);
     }
