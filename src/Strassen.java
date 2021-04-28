@@ -64,7 +64,8 @@ public class Strassen {
         double Ayl = baselog(A.length,2);
         double Bxl = baselog(B[0].length,2);
         double Byl = baselog(B.length,2);
-
+        int cutA=0;
+        int cutB=0;
         if((Axl%1) != 0 || (Ayl%1) != 0 || (Bxl%1)!= 0 || (Byl%1) != 0){
             //행렬 A와 B의 크기를 모두 A와B의 가로,세로 넓이 중 가장 큰수의 가장 가까운 2의 제곱으로 바꾸어
             //두 행렬의 크기를 모두 2^n인 정사각형으로 바꾸고 그 늘어난 공간에는 0으로 채운다.
@@ -76,22 +77,23 @@ public class Strassen {
                 cnt++;
                 m++;
             }
+            cutA = maxlength-A.length+cnt;
+            cutB = maxlength-B[0].length+cnt;
             A = merge0_Matrix(A,maxlength-A[0].length+cnt,maxlength-A.length+cnt);
             B = merge0_Matrix(B,maxlength-B[0].length+cnt,maxlength-B.length+cnt);
-
         }
         if(A.length <= 2){
             return mul_Matrix(A,B);
         }
         int n = A.length/2;
-        int [][]A00 = cut_Matrix(0,0,A);
-        int [][]A01 = cut_Matrix(0,n,A);
-        int [][]A10 = cut_Matrix(n,0,A);
-        int [][]A11 = cut_Matrix(n,n,A);
-        int [][]B00 = cut_Matrix(0,0,B);
-        int [][]B01 = cut_Matrix(0,n,B);
-        int [][]B10 = cut_Matrix(n,0,B);
-        int [][]B11 = cut_Matrix(n,n,B);
+        int [][]A00 = cut_Matrix(0,0,A.length/2,A.length/2,A);
+        int [][]A01 = cut_Matrix(n,0,A[0].length,A.length/2,A);
+        int [][]A10 = cut_Matrix(0,n,A[0].length/2,A.length,A);
+        int [][]A11 = cut_Matrix(n,n,A[0].length,A.length,A);
+        int [][]B00 = cut_Matrix(0,0,B[0].length/2,B.length/2,B);
+        int [][]B01 = cut_Matrix(n,0,B[0].length,B.length/2,B);
+        int [][]B10 = cut_Matrix(0,n,B[0].length/2,B.length,B);
+        int [][]B11 = cut_Matrix(n,n,B[0].length,B.length,B);
 
         int[][] M1 = strassen_Matrix(sum_Matrix(A00,A11),sum_Matrix(B00,B11));
         int[][] M2 = strassen_Matrix(sum_Matrix(A10,A11),B00);
@@ -105,14 +107,14 @@ public class Strassen {
         int [][]C01 = sum_Matrix(M3,M5);
         int [][]C10 = sum_Matrix(M2,M4);
         int [][]C11 = sum_Matrix(sum_Matrix(sub_Matrix(M1,M2),M3),M6);
-        return merge_Matrix(C00,C01,C10,C11);
+        return cut_Matrix(0,0,B[0].length-cutB,A.length-cutA,merge_Matrix(C00,C01,C10,C11));
     }
-    int [][]cut_Matrix(int startx,int starty,int [][]A){
+    int [][]cut_Matrix(int startx,int starty,int endx,int endy,int [][]A){
 
-        int [][]cutmat = new int[A.length/2][A.length/2];
-        for(int i=0,x=startx;i<A.length/2;i++,x++){
-            for(int j=0,y=starty;j<A.length/2;j++,y++){
-                cutmat[i][j] = A[x][y];
+        int [][]cutmat = new int[endy-starty][endx-startx];
+        for(int j=0,y=starty;j<endy-starty;j++,y++){
+            for(int i=0,x=startx;i<endx-startx;i++,x++){
+                cutmat[j][i] = A[y][x];
             }
         }
          return cutmat;
@@ -149,23 +151,26 @@ public class Strassen {
     public static void main(String[] args) {
         Strassen str = new Strassen();
         Scanner sc = new Scanner(System.in);
-        System.out.println("2의 제곱인 배열의 길이 n입력");
-        int x = sc.nextInt();
-        int y = sc.nextInt();
-        int [][] A = new int[y][x];
-        int [][] B = new int[y][x];
+        System.out.println("행렬 A의 가로길이 입력");
+        int Ax = sc.nextInt();
+        System.out.println("행렬 A의 세로길이 입력");
+        int Ay = sc.nextInt();
+        System.out.println("행렬 B의 가로길이 입력");
+        int Bx = sc.nextInt();
+        System.out.println("행렬 B의 세로길이 입력");
+        int By = sc.nextInt();
+
+        int [][] A = new int[Ay][Ax];
+        int [][] B = new int[By][Bx];
         System.out.println(A.length);
-        str.init_Matrix(A);
-        str.init_Matrix(B);
+        str.init_Matrix(A);//배열A를 1~5의 랜덤한 숫자로 채움
+        str.init_Matrix(B);//배열B를 1~5의 랜덤한 숫자로 채움
         System.out.println("A배열");
-        //str.print_Matrix(A);
+        str.print_Matrix(A);
         System.out.println("B배열");
-        //str.print_Matrix(B);
+        str.print_Matrix(B);
 
         System.out.println("일반적인 행렬 곱");
-        int[][]C = new int [][]{{1,2,3},{1,2,3}};//test
-        int[][]D = new int [][]{{1,2,3},{1,2,3},{1,2,3}};
-
         long normal_start = System.currentTimeMillis();
         str.print_Matrix(str.mul_Matrix(A,B));
         long normal_end = System.currentTimeMillis();
